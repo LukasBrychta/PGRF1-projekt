@@ -1,26 +1,28 @@
 package view;
 
+import raster.Raster;
+import raster.RasterBufferedImage;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
 public class Panel extends JPanel {
-
-    private BufferedImage image;
+    private Raster raster;
 
     public Panel(int width, int height) {
         setPreferredSize(new Dimension(width, height));
 
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        raster = new RasterBufferedImage(width, height);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawImage(image, 0, 0, null);
+        g.drawImage(((RasterBufferedImage)raster).getImage(), 0, 0, null);
     }
 
-    public BufferedImage getRaster() {
-        return image;
+    public Raster getRaster() {
+        return raster;
     }
 }

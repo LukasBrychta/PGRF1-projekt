@@ -1,4 +1,31 @@
 package raster;
 
-public class RasterBufferedImage {
+import java.awt.image.BufferedImage;
+
+public class RasterBufferedImage implements Raster {
+
+    private final BufferedImage image;
+
+    public RasterBufferedImage(int width, int height) {
+        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    }
+
+
+    @Override
+    public void setPixel(int x, int y, int color) {
+        //TODO: Osetrit vykresleni mimo obrazovku
+        image.setRGB(x, y, color);
+    }
+
+    @Override
+    public int getWidth() {return image.getWidth();}
+
+    public int getHeight() {return image.getHeight();}
+
+    public BufferedImage getImage() {return image;}
+
+    @Override
+    public void clear() {
+        image.getGraphics().clearRect(0, 0, image.getWidth(), image.getHeight());
+    }
 }
