@@ -24,7 +24,6 @@ public class Controller2D {
 
     public Controller2D(Panel panel) {
         this.panel = panel;
-
         lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
         polygonRasterizer = new PolygonRasterizer(lineRasterizer);
 
@@ -34,22 +33,21 @@ public class Controller2D {
     }
 
     private void initListeners() {
-    //TODO: Vykreslovani pri tazeni mysi. Mody na zadavani usecek a polygonu. Moznost kliknout na existujici bod a presunout.
-        panel.addMouseListener(new MouseAdapter() {
-            public void mousePressed(MouseEvent e) {
-                if(e.getButton() == MouseEvent.BUTTON1) {
-                    int startX = panel.getWidth() / 2;
-                    int startY = panel.getHeight() / 2;
-                    int endX = e.getX();
-                    int endY = e.getY();
-                    //TODO: Implementovat tridu Line, moznost vybrat zacatek a konec
-                    lineStart = new Point2D(startX, startY);
-                    lineEnd = new Point2D(endX, endY);
+        //TODO: Vykreslovani pri tazeni mysi. Mody na zadavani usecek a polygonu. Moznost kliknout na existujici bod a presunout.
+        panel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                int startX = panel.getWidth() / 2;
+                int startY = panel.getHeight() / 2;
+                int endX = e.getX();
+                int endY = e.getY();
+                //TODO: Implementovat tridu Line, moznost vybrat zacatek a konec
+                lineStart = new Point2D(startX, startY);
+                lineEnd = new Point2D(endX, endY);
 
-                    drawScene();
-                }
+                drawScene();
 
-                if(e.getButton() == MouseEvent.BUTTON3) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
                     Point2D point = new Point2D(e.getX(), e.getY());
                     polygon.addPoint(point);
 
@@ -61,15 +59,18 @@ public class Controller2D {
         panel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if(e.getKeyChar() == 'c'){
+                if (e.getKeyChar() == 'c') {
                     System.out.print("c pressed");
                     drawScene();
+                }else if(e.getKeyChar() == 'p') {
+                    System.out.println("p pressed");
+
                 }
             }
         });
     }
 
-    private void drawScene(){
+    private void drawScene() {
         panel.getRaster().clear();
 
         lineRasterizer.rasterize(lineStart.getX(), lineStart.getY(), lineEnd.getX(), lineEnd.getY());
