@@ -1,17 +1,22 @@
 package rasterize;
 
+import model.Line;
 import raster.Raster;
 
 public class LineRasterizerTrivial extends LineRasterizer {
     public LineRasterizerTrivial(Raster raster) {super(raster);}
 
     @Override
-    public void rasterize(int x1, int y1, int x2, int y2) {
+    public void rasterize(Line line) {
+        int x1 = line.getStart().getX();
+        int x2 = line.getEnd().getX();
+        int y1 = line.getStart().getY();
+        int y2 = line.getEnd().getY();
         double dx = x2 - x1;
         double dy = y2 - y1;
         double k = dy / dx;
         double q = y1 - k * x1;
-        //TODO: Doresit svisla cara+1px bod. Smernice: y = kx + q
+        //TODO: Doresit vertikalni/horizontalni cara + 1px bod. Smernice: y = kx + q
         if (Math.abs(k) > 1){
             if(y1 > y2){
                 int xx, yy;
@@ -43,6 +48,5 @@ public class LineRasterizerTrivial extends LineRasterizer {
             }
         }
     }
-
 
 }

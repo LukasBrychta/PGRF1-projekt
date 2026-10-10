@@ -1,5 +1,6 @@
 package controller;
 
+import model.Line;
 import model.Point2D;
 import model.Polygon;
 import rasterize.LineRasterizer;
@@ -14,13 +15,13 @@ import java.awt.event.MouseEvent;
 
 public class Controller2D {
     private final Panel panel;
-    private int x, y;
+    private Point2D mousePosition;
 
     private LineRasterizer lineRasterizer;
     private PolygonRasterizer polygonRasterizer;
 
     private final Polygon polygon;
-    private Point2D lineStart, lineEnd;
+    private final Line line;
 
     public Controller2D(Panel panel) {
         this.panel = panel;
@@ -28,31 +29,43 @@ public class Controller2D {
         polygonRasterizer = new PolygonRasterizer(lineRasterizer);
 
         polygon = new Polygon();
+        line = new Line();
 
         initListeners();
     }
 
+    private enum Mode {
+        LINE,
+        POLYGON
+    }
+
+    Mode mode = Mode.LINE;
+
     private void initListeners() {
-        //TODO: Vykreslovani pri tazeni mysi. Mody na zadavani usecek a polygonu. Moznost kliknout na existujici bod a presunout.
-        panel.addMouseMotionListener(new MouseAdapter() {
+        //TODO: Vykreslovani pri tazeni mysi. Mody na zadavani usecek a polygonu.
+        panel.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseDragged(MouseEvent e) {
-                int startX = panel.getWidth() / 2;
-                int startY = panel.getHeight() / 2;
-                int endX = e.getX();
-                int endY = e.getY();
-                //TODO: Implementovat tridu Line, moznost vybrat zacatek a konec
-                lineStart = new Point2D(startX, startY);
-                lineEnd = new Point2D(endX, endY);
-
-                drawScene();
-
-                if (e.getButton() == MouseEvent.BUTTON3) {
+            public void mousePressed(MouseEvent e) {
+                if (mode == Mode.LINE) {
+                    line.setStart(new Point2D(e.getX(), e.getY()));
+                }
+                if (mode == Mode.POLYGON) {
                     Point2D point = new Point2D(e.getX(), e.getY());
                     polygon.addPoint(point);
-
-                    drawScene();
                 }
+            }
+        });
+        panel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (mode == Mode.LINE) {
+                    line.setEnd(new Point2D(e.getX(), e.getY()));
+                }
+                if (mode == Mode.POLYGON) {
+                    mousePosition = new Point2D(e.getX(), e.getY());
+
+                }
+                drawScene();
             }
         });
 
@@ -61,10 +74,16 @@ public class Controller2D {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyChar() == 'c') {
                     System.out.print("c pressed");
-                    drawScene();
-                }else if(e.getKeyChar() == 'p') {
+                    panel.getRaster().clear();
+                    panel.repaint();
+                }
+                if (e.getKeyChar() == 'p') {
                     System.out.println("p pressed");
-
+                    mode = Mode.POLYGON;
+                }
+                if (e.getKeyChar() == 'l') {
+                    System.out.println("l pressed");
+                    mode = Mode.LINE;
                 }
             }
         });
@@ -73,8 +92,16 @@ public class Controller2D {
     private void drawScene() {
         panel.getRaster().clear();
 
-        lineRasterizer.rasterize(lineStart.getX(), lineStart.getY(), lineEnd.getX(), lineEnd.getY());
+        if (line.getStart() != null && line.getEnd() != null) {
+            lineRasterizer.rasterize(line);
+        }
+
         polygonRasterizer.rasterize(polygon);
+
+        if (polygon.getSize() > 0 && mousePosition != null) {
+            lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), mousePosition));
+            lineRasterizer.rasterize(new Line(mousePosition, polygon.getPoint(0)));
+        }
 
         panel.repaint();
     }
