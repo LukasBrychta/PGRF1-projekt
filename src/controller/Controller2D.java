@@ -51,17 +51,16 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (mode == Mode.LINE) {
-                    if(line.getStart() != null){
+                    if (line.getStart() != null) { //Ukončení a přidání úsečky do listu
                         line.setEnd((new Point2D(e.getX(), e.getY())));
                         lines.add(line);
                         line = new Line();
-                    }
-                    else{
+                    } else { //Start nové úsečky
                         line.setStart(new Point2D(e.getX(), e.getY()));
                     }
                 }
                 if (mode == Mode.POLYGON) {
-                    Point2D point = new Point2D(e.getX(), e.getY());
+                    Point2D point = new Point2D(e.getX(), e.getY()); //Vytváření polygonu, přidání bodu do polygonu
                     polygon.addPoint(point);
                 }
             }
@@ -73,8 +72,7 @@ public class Controller2D {
                     line.setEnd(new Point2D(e.getX(), e.getY()));
                 }
                 if (mode == Mode.POLYGON) {
-                    mousePosition = new Point2D(e.getX(), e.getY());
-
+                    mousePosition = new Point2D(e.getX(), e.getY()); //Mousetracking pro pružné vykreslování
                 }
                 drawScene();
             }
@@ -96,9 +94,15 @@ public class Controller2D {
                 }
                 if (e.getKeyChar() == 'l') {
                     System.out.print("l pressed. ");
+                    if(mode == mode.POLYGON){
+                        polygons.add(polygon);
+                        polygon = new Polygon();
+                        mousePosition = null;
+                        drawScene();
+                    }
                     mode = Mode.LINE;
                 }
-                if(e.getKeyCode() == KeyEvent.VK_ENTER && mode == Mode.POLYGON){
+                if (e.getKeyCode() == KeyEvent.VK_ENTER && mode == Mode.POLYGON) { //Ukládání polygou a vytvoření nového.
                     polygons.add(polygon);
                     polygon = new Polygon();
                     mousePosition = null;
@@ -111,20 +115,20 @@ public class Controller2D {
     private void drawScene() {
         panel.getRaster().clear();
 
-        if (line.getStart() != null && line.getEnd() != null) {
+        if (line.getStart() != null && line.getEnd() != null) { //Pružné vykreslení rozpracované úsečky
             lineRasterizer.rasterize(line);
         }
 
-        for(Line l : lines){
-                lineRasterizer.rasterize(l);
+        for (Line l : lines) {
+            lineRasterizer.rasterize(l); //Vykreslení hotových úseček
         }
 
-        for (Polygon p : polygons){
-            polygonRasterizer.rasterize(p);
+        for (Polygon p : polygons) {
+            polygonRasterizer.rasterize(p); //Vykreslení hotových polygonů
         }
 
         if (polygon.getSize() > 0 && mousePosition != null) {
-            polygonRasterizer.rasterize(polygon);
+            polygonRasterizer.rasterize(polygon); //Vykreslení rozpracovaného polygonu a pružné úsečky z okrajových bodů k pozici myši.
             lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), mousePosition));
             lineRasterizer.rasterize(new Line(mousePosition, polygon.getPoint(0)));
         }

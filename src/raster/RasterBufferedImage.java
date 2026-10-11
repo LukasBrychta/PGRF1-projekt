@@ -16,11 +16,17 @@ public class RasterBufferedImage implements Raster {
     }
 
     @Override
-    public int getWidth() {return image.getWidth();}
+    public int getWidth() {
+        return image.getWidth();
+    }
 
-    public int getHeight() {return image.getHeight();}
+    public int getHeight() {
+        return image.getHeight();
+    }
 
-    public BufferedImage getImage() {return image;}
+    public BufferedImage getImage() {
+        return image;
+    }
 
     @Override
     public void clear() {
