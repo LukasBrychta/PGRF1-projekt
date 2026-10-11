@@ -12,6 +12,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class Controller2D {
     private final Panel panel;
@@ -20,14 +21,18 @@ public class Controller2D {
     private LineRasterizer lineRasterizer;
     private PolygonRasterizer polygonRasterizer;
 
-    private final Polygon polygon;
-    private final Line line;
+    private ArrayList<Polygon> polygons;
+    private ArrayList<Line> lines;
+    private Polygon polygon;
+    private Line line;
 
     public Controller2D(Panel panel) {
         this.panel = panel;
         lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
         polygonRasterizer = new PolygonRasterizer(lineRasterizer);
 
+        polygons = new ArrayList<>();
+        lines = new ArrayList<>();
         polygon = new Polygon();
         line = new Line();
 
@@ -42,12 +47,18 @@ public class Controller2D {
     Mode mode = Mode.LINE;
 
     private void initListeners() {
-        //TODO: Vykreslovani pri tazeni mysi. Mody na zadavani usecek a polygonu.
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (mode == Mode.LINE) {
-                    line.setStart(new Point2D(e.getX(), e.getY()));
+                    if(line.getStart() != null){
+                        line.setEnd((new Point2D(e.getX(), e.getY())));
+                        lines.add(line);
+                        line = new Line();
+                    }
+                    else{
+                        line.setStart(new Point2D(e.getX(), e.getY()));
+                    }
                 }
                 if (mode == Mode.POLYGON) {
                     Point2D point = new Point2D(e.getX(), e.getY());
@@ -73,17 +84,25 @@ public class Controller2D {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyChar() == 'c') {
-                    System.out.print("c pressed");
+                    System.out.print("c pressed. ");
                     panel.getRaster().clear();
+                    polygons.clear();
+                    lines.clear();
                     panel.repaint();
                 }
                 if (e.getKeyChar() == 'p') {
-                    System.out.println("p pressed");
+                    System.out.print("p pressed. ");
                     mode = Mode.POLYGON;
                 }
                 if (e.getKeyChar() == 'l') {
-                    System.out.println("l pressed");
+                    System.out.print("l pressed. ");
                     mode = Mode.LINE;
+                }
+                if(e.getKeyCode() == KeyEvent.VK_ENTER && mode == Mode.POLYGON){
+                    polygons.add(polygon);
+                    polygon = new Polygon();
+                    mousePosition = null;
+                    drawScene();
                 }
             }
         });
@@ -96,9 +115,16 @@ public class Controller2D {
             lineRasterizer.rasterize(line);
         }
 
-        polygonRasterizer.rasterize(polygon);
+        for(Line l : lines){
+                lineRasterizer.rasterize(l);
+        }
+
+        for (Polygon p : polygons){
+            polygonRasterizer.rasterize(p);
+        }
 
         if (polygon.getSize() > 0 && mousePosition != null) {
+            polygonRasterizer.rasterize(polygon);
             lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), mousePosition));
             lineRasterizer.rasterize(new Line(mousePosition, polygon.getPoint(0)));
         }

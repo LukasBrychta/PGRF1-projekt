@@ -7,7 +7,7 @@ public class LineRasterizerTrivial extends LineRasterizer {
     public LineRasterizerTrivial(Raster raster) {super(raster);}
 
     @Override
-    public void rasterize(Line line) {
+    public void rasterize(Line line) { //Triviální algoritmus pro vykreslení úsečky
         int x1 = line.getStart().getX();
         int x2 = line.getEnd().getX();
         int y1 = line.getStart().getY();
@@ -16,8 +16,10 @@ public class LineRasterizerTrivial extends LineRasterizer {
         double dy = y2 - y1;
         double k = dy / dx;
         double q = y1 - k * x1;
-        //TODO: Doresit vertikalni/horizontalni cara + 1px bod. Smernice: y = kx + q
-        if (Math.abs(k) > 1){
+        if(x1 == x2 && y1 == y2){ //Reseni pro 1px bod
+            raster.setPixel(x1, y1, 0xFFFFFFFF);
+        }
+        else if (Math.abs(k) > 1){
             if(y1 > y2){
                 int xx, yy;
                 xx = x2;
@@ -26,11 +28,16 @@ public class LineRasterizerTrivial extends LineRasterizer {
                 y2 = y1;
                 x1 = xx;
                 y1 = yy;
-
             }
-            for(int i = y1; i <= y2;i++){
-                double x = (i - q)/k;
-                raster.setPixel((int)Math.round(x), i, 0xFFFFFFFF);
+            if(x1 == x2){ //Reseni pokud je usecka vertikalni
+                for(int i = y1; i <= y2;i++){
+                    raster.setPixel(x1, i, 0xFFFFFFFF);
+                }
+            } else {
+                for(int i = y1; i <= y2;i++){
+                    double x = (i - q)/k;
+                    raster.setPixel((int)Math.round(x), i, 0xFFFFFFFF);
+                }
             }
         } else {
             if(x1 > x2){

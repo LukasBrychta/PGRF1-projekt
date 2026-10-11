@@ -10,10 +10,8 @@ public class RasterBufferedImage implements Raster {
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     }
 
-
     @Override
     public void setPixel(int x, int y, int color) {
-        //TODO: Osetrit vykresleni mimo obrazovku
         image.setRGB(x, y, color);
     }
 
