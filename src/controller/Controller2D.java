@@ -1,5 +1,7 @@
 package controller;
 
+import fill.Filler;
+import fill.SeedFill;
 import model.Point2D;
 import model.Polygon;
 import rasterize.LineRasterizer;
@@ -21,15 +23,22 @@ public class Controller2D {
     private LineRasterizer lineRasterizer;
     private PolygonRasterizer polygonRasterizer;
 
+    // Fillers
+    private SeedFill seedFiller;
+
     private final Polygon polygon;
     private Point2D lineStart, lineEnd;
 
     public Controller2D(Panel panel) {
         this.panel = panel;
 
+        // Rasterozers
         lineRasterizer = new LineRasterizerGraphics(panel.getRaster());
         //lineRasterizer = new LineRasterizerTrivial(panel.getRaster());
         polygonRasterizer = new PolygonRasterizer(lineRasterizer);
+
+        // Fillers
+        seedFiller = new SeedFill(panel.getRaster());
 
         polygon = new Polygon();
 
@@ -51,10 +60,14 @@ public class Controller2D {
                     drawScene();
                 }
 
+                if(e.getButton() == MouseEvent.BUTTON2) {
+                    seedFiller.setSeed(new Point2D(e.getX(), e.getY()));
+                    drawScene();
+                }
+
                 if(e.getButton() == MouseEvent.BUTTON3) {
                     Point2D point = new Point2D(e.getX(), e.getY());
                     polygon.addPoint(point);
-
                     drawScene();
                 }
             }
@@ -64,8 +77,12 @@ public class Controller2D {
     private void drawScene() {
         panel.getRaster().clear();
 
-        lineRasterizer.rasterize(lineStart.getX(), lineStart.getY(), lineEnd.getX(), lineEnd.getY());
+        if(lineStart != null && lineEnd != null)
+            lineRasterizer.rasterize(lineStart.getX(), lineStart.getY(), lineEnd.getX(), lineEnd.getY());
+
         polygonRasterizer.rasterize(polygon);
+
+        seedFiller.fill();
 
         panel.repaint();
     }
