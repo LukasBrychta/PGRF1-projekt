@@ -27,8 +27,10 @@ public class Controller2D {
     private ArrayList<Line> lines;
     private Polygon polygon;
     private Line line;
+    private Line staticLine = new Line(new Point2D(10, 10), new Point2D(400, 400));
     // Fillers
     private SeedFill seedFiller;
+
 
 
     public Controller2D(Panel panel) {
@@ -43,7 +45,7 @@ public class Controller2D {
         lines = new ArrayList<>();
         polygon = new Polygon();
         line = new Line();
-
+        lines.add(this.staticLine);
         initListeners();
     }
 
@@ -58,7 +60,7 @@ public class Controller2D {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                if (mode == Mode.LINE) {
+                /*if (mode == Mode.LINE && e.getButton() == MouseEvent.BUTTON1) {
                     if (line.getStart() != null) { //Ukončení a přidání úsečky do listu
                         line.setEnd((new Point2D(e.getX(), e.getY())));
                         lines.add(line);
@@ -67,14 +69,38 @@ public class Controller2D {
                         line.setStart(new Point2D(e.getX(), e.getY()));
                     }
                 }
-                if (mode == Mode.POLYGON) {
+                if (mode == Mode.POLYGON && e.getButton() == MouseEvent.BUTTON1) {
                     Point2D point = new Point2D(e.getX(), e.getY()); //Vytváření polygonu, přidání bodu do polygonu
                     polygon.addPoint(point);
                 }
-                if(e.getButton() == MouseEvent.BUTTON2) {
+                if(e.getButton() == MouseEvent.BUTTON3) {
                     seedFiller.setSeed(new Point2D(e.getX(), e.getY()));
                     drawScene();
-                }
+                }*/
+
+                //1. spocitat tecny vektor -> vytvorit tridu vektor
+                int tx = staticLine.getEnd().getX()-staticLine.getStart().getX();
+                int ty = staticLine.getEnd().getY()-staticLine.getStart().getY();
+                //2. spocitat normalu
+                double nx = ty;
+                double ny = -tx;
+                double nL = Math.sqrt(nx*nx+ny*ny);
+                nx = nx/nL;
+                ny = ny/nL;
+                //3. Spocitat vektor k bodu P (kam jsem kliknul)
+                double vx = e.getX() - staticLine.getStart().getX();
+                double vy = e.getY() - staticLine.getStart().getY();
+                double vL = Math.sqrt(vx*vx+vy*vy);
+                vx = vx/vL;
+                vy = vx/vL;
+                //4. Skalarni soucin
+                double dot = nx*vx+ny*vy;
+                System.out.println("Dot:" + dot);
+                //5. Porovnat znamenka vysledku skalar. soucinu, rozhodnout, jestli je vlevo nebo vpravo
+                if(dot < 0)
+                    System.out.println("Pravo");
+                else
+                    System.out.println("Levo");
             }
         });
         panel.addMouseMotionListener(new MouseAdapter() {
@@ -106,7 +132,7 @@ public class Controller2D {
                 }
                 if (e.getKeyChar() == 'l') {
                     System.out.print("l pressed. ");
-                    if(mode == mode.POLYGON){
+                    if(mode == Mode.POLYGON){
                         polygons.add(polygon);
                         polygon = new Polygon();
                         mousePosition = null;
