@@ -66,8 +66,12 @@ public class Controller2D {
             @Override
             public void mousePressed(MouseEvent e) {
                 if (mode == Mode.LINE && e.getButton() == MouseEvent.BUTTON1) {
+                    Point2D end = new Point2D(e.getX(), e.getY());
                     if (line.getStart() != null) { //Ukončení a přidání úsečky do listu
-                        line.setEnd((new Point2D(e.getX(), e.getY())));
+                        if(e.isShiftDown()){
+                            end = snapTo45Degrees(line.getStart(), end);
+                        }
+                        line.setEnd(end);
                         lines.add(line);
                         line = new Line();
                     } else { //Start nové úsečky
@@ -76,6 +80,9 @@ public class Controller2D {
                 }
                 if (mode == Mode.POLYGON && e.getButton() == MouseEvent.BUTTON1) {
                     Point2D point = new Point2D(e.getX(), e.getY()); //Vytváření polygonu, přidání bodu do polygonu
+                    if(e.isShiftDown() && polygon.getSize()>0){
+                        point = snapTo45Degrees(polygon.getPoint(polygon.getSize()-1), point);
+                    }
                     polygon.addPoint(point);
                 }
                 if(e.getButton() == MouseEvent.BUTTON3) {
@@ -116,11 +123,19 @@ public class Controller2D {
         panel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
+                Point2D currentMouse = new Point2D(e.getX(), e.getY());
                 if (mode == Mode.LINE) {
-                    line.setEnd(new Point2D(e.getX(), e.getY()));
+                    if(e.isShiftDown() && line.getStart() != null){
+                        line.setEnd(snapTo45Degrees(line.getStart(), currentMouse));
+                    } else
+                        line.setEnd(currentMouse);
                 }
                 if (mode == Mode.POLYGON) {
                     mousePosition = new Point2D(e.getX(), e.getY()); //Mousetracking pro pružné vykreslování
+                    if(e.isShiftDown() && polygon.getSize() > 0){
+                        mousePosition =  snapTo45Degrees(polygon.getPoint(polygon.getSize()-1), currentMouse);
+                    } else
+                        mousePosition = currentMouse;
                 }
                 drawScene();
             }
@@ -190,7 +205,21 @@ public class Controller2D {
         panel.repaint();
     }
 
-    private void snapTo45Degrees(){
-
+    private Point2D snapTo45Degrees(Point2D start, Point2D end){
+        //Rozdilove vektory
+        double dx = end.getX() - start.getX();
+        double dy = end.getY() - start.getY();
+        //Zjistit polomer
+        double r = Math.sqrt(dx*dx+dy*dy);
+        if(r == 0) return end;
+        //Uhel v radianech
+        double angle = Math.atan2(dy, dx);
+        //Zaokrouhlit na 45 stupnu
+        double step = Math.PI/4;
+        double snappedAngle = Math.round(angle/step)*step;
+        //Nove souradnice podle uhlu
+        int x = start.getX() + (int) Math.round(r * Math.cos(snappedAngle));
+        int y = start.getY() + (int) Math.round(r * Math.sin(snappedAngle));
+        return new Point2D(x, y);
     }
 }
