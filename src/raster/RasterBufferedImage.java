@@ -13,14 +13,20 @@ public class RasterBufferedImage implements Raster {
 
     @Override
     public void setPixel(int x, int y, int color) {
-        // TODO: ošetřit vykreslení mimo obrazovku
-        image.setRGB(x, y, color);
+        //Ošetřit vykreslení mimo obrazovku
+        if (inBounds(x, y)){
+            image.setRGB(x, y, color);
+        }
     }
 
     @Override
     public int getPixel(int x, int y) {
-        // TODO: ošetřit vykreslení mimo obrazovku
-        return image.getRGB(x, y);
+        //Ošetřit vykreslení mimo obrazovku
+        if(inBounds(x, y)){
+            return image.getRGB(x, y);
+        }
+        else
+            return -1;
     }
 
     @Override
@@ -40,5 +46,10 @@ public class RasterBufferedImage implements Raster {
     @Override
     public void clear() {
         image.getGraphics().clearRect(0, 0, image.getWidth(), image.getHeight());
+    }
+
+    @Override
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && x < image.getWidth() && y >= 0 && y < image.getHeight();
     }
 }

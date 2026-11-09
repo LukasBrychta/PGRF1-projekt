@@ -11,34 +11,38 @@ public class SeedFill implements Filler {
 
     public SeedFill(Raster raster) {
         this.raster = raster;
-        this.fillColor = 0x00ff00;
+        this.fillColor = 0xffffffff;
     }
 
     @Override
     public void fill() {
         if(seed == null) return;
+        if(backgroundColor == fillColor) return;
 
         fill(seed.getX(), seed.getY());
     }
 
     // rekurze
     private void fill(int x, int y) {
-        // 1. načtu barvu pixelu na x, y
-        int colorPixel = raster.getPixel(x, y);
+        if(!raster.inBounds(x, y)) return;
+        else{
+            // 1. načtu barvu pixelu na x, y
+            int colorPixel = raster.getPixel(x, y);
 
-        // 2. dostal jsem barvu a musím rozhodnout, jestli chci obarvit pixel
-        // rovná se barva barvě pozadí? pokud ano, obarvím, jinak nic nedělám
-        if(colorPixel != backgroundColor)
-            return;
+            // 2. dostal jsem barvu a musím rozhodnout, jestli chci obarvit pixel
+            // rovná se barva barvě pozadí? pokud ano, obarvím, jinak nic nedělám
+            if(colorPixel != backgroundColor)
+                return;
 
-        // 3. pokud mám obarvit
-        // obarvím
-        raster.setPixel(x, y, fillColor);
-        // vše opakuji pro sousedy (rekurze)
-        fill(x + 1, y);
-        fill(x - 1, y);
-        fill(x, y + 1);
-        fill(x, y - 1);
+            // 3. pokud mám obarvit
+            // obarvím
+            raster.setPixel(x, y, fillColor);
+            // vše opakuji pro sousedy (rekurze)
+            fill(x + 1, y);
+            fill(x - 1, y);
+            fill(x, y + 1);
+            fill(x, y - 1);
+        }
     }
 
     public void setSeed(Point2D seed) {

@@ -29,11 +29,10 @@ public class Controller2D {
     private ArrayList<Line> lines;
     private Polygon polygon;
     private Line line;
+    private ArrayList<Point2D> seeds;
 
     // Fillers
     private SeedFill seedFiller;
-
-
 
     private Edge edge = new Edge(300, 400, 500, 200);
 
@@ -49,6 +48,7 @@ public class Controller2D {
         lines = new ArrayList<>();
         polygon = new Polygon();
         line = new Line();
+        seeds = new ArrayList<>();
         initListeners();
 
         drawScene();
@@ -65,7 +65,7 @@ public class Controller2D {
         panel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                /*if (mode == Mode.LINE && e.getButton() == MouseEvent.BUTTON1) {
+                if (mode == Mode.LINE && e.getButton() == MouseEvent.BUTTON1) {
                     if (line.getStart() != null) { //Ukončení a přidání úsečky do listu
                         line.setEnd((new Point2D(e.getX(), e.getY())));
                         lines.add(line);
@@ -73,16 +73,15 @@ public class Controller2D {
                     } else { //Start nové úsečky
                         line.setStart(new Point2D(e.getX(), e.getY()));
                     }
-                 */
                 }
                 if (mode == Mode.POLYGON && e.getButton() == MouseEvent.BUTTON1) {
                     Point2D point = new Point2D(e.getX(), e.getY()); //Vytváření polygonu, přidání bodu do polygonu
                     polygon.addPoint(point);
                 }
                 if(e.getButton() == MouseEvent.BUTTON3) {
-                    seedFiller.setSeed(new Point2D(e.getX(), e.getY()));
+                    seeds.add(new Point2D(e.getX(), e.getY()));
                     drawScene();
-                }*/
+                }
 
             // 1. spočítáme tečný vektor
             int tx = edge.getX2() - edge.getX1();
@@ -135,6 +134,7 @@ public class Controller2D {
                     panel.getRaster().clear();
                     polygons.clear();
                     lines.clear();
+                    seeds.clear();
                     panel.repaint();
                 }
                 if (e.getKeyChar() == 'p') {
@@ -164,10 +164,6 @@ public class Controller2D {
     private void drawScene() {
         panel.getRaster().clear();
 
-        if (line.getStart() != null && line.getEnd() != null) { //Pružné vykreslení rozpracované úsečky
-            lineRasterizer.rasterize(line);
-        }
-
         for (Line l : lines) {
             lineRasterizer.rasterize(l); //Vykreslení hotových úseček
         }
@@ -176,13 +172,25 @@ public class Controller2D {
             polygonRasterizer.rasterize(p); //Vykreslení hotových polygonů
         }
 
+        for (Point2D s : seeds){
+            seedFiller.setSeed(s);
+            seedFiller.fill();
+        }
+
+        if (line.getStart() != null && line.getEnd() != null) { //Pružné vykreslení rozpracované úsečky
+            lineRasterizer.rasterize(line);
+        }
+
         if (polygon.getSize() > 0 && mousePosition != null) {
             polygonRasterizer.rasterize(polygon); //Vykreslení rozpracovaného polygonu a pružné úsečky z okrajových bodů k pozici myši.
             lineRasterizer.rasterize(new Line(polygon.getPoint(polygon.getSize() - 1), mousePosition));
             lineRasterizer.rasterize(new Line(mousePosition, polygon.getPoint(0)));
         }
-        seedFiller.fill();
 
         panel.repaint();
+    }
+
+    private void snapTo45Degrees(){
+
     }
 }
