@@ -3,6 +3,7 @@ package controller;
 import model.Line;
 import fill.Filler;
 import fill.SeedFill;
+import model.Edge;
 import model.Point2D;
 import model.Polygon;
 import rasterize.LineRasterizer;
@@ -20,6 +21,7 @@ public class Controller2D {
     private final Panel panel;
     private Point2D mousePosition;
 
+    // Rasterizers
     private LineRasterizer lineRasterizer;
     private PolygonRasterizer polygonRasterizer;
 
@@ -27,11 +29,13 @@ public class Controller2D {
     private ArrayList<Line> lines;
     private Polygon polygon;
     private Line line;
-    private Line staticLine = new Line(new Point2D(10, 10), new Point2D(400, 400));
+
     // Fillers
     private SeedFill seedFiller;
 
 
+
+    private Edge edge = new Edge(300, 400, 500, 200);
 
     public Controller2D(Panel panel) {
         this.panel = panel;
@@ -45,8 +49,9 @@ public class Controller2D {
         lines = new ArrayList<>();
         polygon = new Polygon();
         line = new Line();
-        lines.add(this.staticLine);
         initListeners();
+
+        drawScene();
     }
 
     private enum Mode {
@@ -68,6 +73,7 @@ public class Controller2D {
                     } else { //Start nové úsečky
                         line.setStart(new Point2D(e.getX(), e.getY()));
                     }
+                 */
                 }
                 if (mode == Mode.POLYGON && e.getButton() == MouseEvent.BUTTON1) {
                     Point2D point = new Point2D(e.getX(), e.getY()); //Vytváření polygonu, přidání bodu do polygonu
@@ -78,29 +84,34 @@ public class Controller2D {
                     drawScene();
                 }*/
 
-                //1. spocitat tecny vektor -> vytvorit tridu vektor
-                int tx = staticLine.getEnd().getX()-staticLine.getStart().getX();
-                int ty = staticLine.getEnd().getY()-staticLine.getStart().getY();
-                //2. spocitat normalu
-                double nx = ty;
-                double ny = -tx;
-                double nL = Math.sqrt(nx*nx+ny*ny);
-                nx = nx/nL;
-                ny = ny/nL;
-                //3. Spocitat vektor k bodu P (kam jsem kliknul)
-                double vx = e.getX() - staticLine.getStart().getX();
-                double vy = e.getY() - staticLine.getStart().getY();
-                double vL = Math.sqrt(vx*vx+vy*vy);
-                vx = vx/vL;
-                vy = vx/vL;
-                //4. Skalarni soucin
-                double dot = nx*vx+ny*vy;
-                System.out.println("Dot:" + dot);
-                //5. Porovnat znamenka vysledku skalar. soucinu, rozhodnout, jestli je vlevo nebo vpravo
-                if(dot < 0)
-                    System.out.println("Pravo");
-                else
-                    System.out.println("Levo");
+            // 1. spočítáme tečný vektor
+            int tx = edge.getX2() - edge.getX1();
+            int ty = edge.getY2() - edge.getY1();
+
+            // 2. spočítáme normálu
+            double nx = -ty;
+            double ny = tx;
+            double nL = Math.sqrt(nx * nx + ny * ny);
+            nx = nx / nL;
+            ny = ny / nL;
+
+            // 3. Spočítáme vektor k bodu P (kam jsem kliknul)
+            double vx = e.getX() - edge.getX1();
+            double vy = e.getY() - edge.getY1();
+            double vL = Math.sqrt(vx * vx + vy * vy);
+            vx = vx / vL;
+            vy = vy / vL;
+
+            // 4. Skalární součin
+            double dot = nx * vx + ny * vy;
+                    System.out.println("dot: " + dot);
+
+            // 5. Porovnat znamenáko výsledku skalárního součinu (úhel)
+            // rozhodnout, jestli je vlevo nebo vpravo
+                    if(dot < 0)
+                    System.out.println("Vpravo");
+                    else
+                            System.out.println("Vlevo");
             }
         });
         panel.addMouseMotionListener(new MouseAdapter() {
